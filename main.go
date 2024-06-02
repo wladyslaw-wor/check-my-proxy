@@ -134,7 +134,7 @@ func checkProxies(bot *tgbotapi.BotAPI, db *sql.DB, proxies []Proxy) {
 		transport := &http.Transport{Proxy: proxyFunc}
 		client := &http.Client{Transport: transport, Timeout: 10 * time.Second}
 
-		resp, err := client.Get("https://steampowered.com/")
+		resp, err := client.Get("http://lumtest.com/myip.json")
 		if err != nil || resp.StatusCode != http.StatusOK {
 			sendAlert(bot, db, proxy, err)
 		}
