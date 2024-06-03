@@ -45,9 +45,9 @@ func main() {
 	}
 	defer db.Close()
 
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, chat_id BIGINT UNIQUE)")
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS tg_users (id SERIAL PRIMARY KEY, chat_id BIGINT UNIQUE)")
 	if err != nil {
-		log.Fatalf("Ошибка создания таблицы users: %v", err)
+		log.Fatalf("Ошибка создания таблицы tg_users: %v", err)
 	}
 
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS proxy (id SERIAL PRIMARY KEY, ip VARCHAR(15), port VARCHAR(15), username VARCHAR(50), pass VARCHAR(50))")
@@ -63,7 +63,7 @@ func main() {
 		for update := range updates {
 			if update.Message != nil && strings.ToLower(update.Message.Text) == "/start" {
 				chatID := update.Message.Chat.ID
-				_, err := db.Exec("INSERT INTO users (chat_id) VALUES ($1) ON CONFLICT (chat_id) DO NOTHING", chatID)
+				_, err := db.Exec("INSERT INTO tg_users (chat_id) VALUES ($1) ON CONFLICT (chat_id) DO NOTHING", chatID)
 				if err != nil {
 					log.Printf("Ошибка добавления chat_id в БД: %v", err)
 				} else {
@@ -146,7 +146,7 @@ func checkProxies(bot *tgbotapi.BotAPI, db *sql.DB, proxies []Proxy) {
 
 func sendAlert(bot *tgbotapi.BotAPI, db *sql.DB, proxy Proxy, err error) {
 	message := fmt.Sprintf("Прокся %s:%s отъебнула: %v", proxy.IP, proxy.Port, err)
-	rows, err := db.Query("SELECT chat_id FROM users")
+	rows, err := db.Query("SELECT chat_id FROM tg_users")
 	if err != nil {
 		log.Printf("Ошибка выбора chat_id из БД: %v", err)
 		return
